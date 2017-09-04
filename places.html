@@ -1,0 +1,146 @@
+<!doctype html>
+<!--
+	United States Populated Place Search
+	Author: Billy Chandler
+	Version: 1.0
+	Last Revised: September 4, 2017
+	
+	Note: Data is from the Geographic Names Information System (GNIS) of the United States Board on Geographic Names (https://geonames.usgs.gov/)
+-->
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta charset="utf-8">
+		<title>United States Populated Place Search</title>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" type="text/javascript"></script>
+	</head>
+	<body>
+		<div>
+			<!-- Web page title, description, and notes -->
+			<h1>United States Populated Place Search</h1>
+			<p>This feature will allow users to search for the populated places in a given United States county. Populated places include (but are not limited to) cities, towns, villages, census-designated places, unincorporated communities, and neighborhoods. Each populated place will link to its location on <a href="http://www.google.com/maps" target="_blank">Google Maps</a>.</p>
+			<p><span style="text-decoration:underline">Notes:</span>
+				<ul>
+					<li>When writing the name for an independent city in the county textbox, please write " (city)" after its name.</li>
+					<li>When writing the name for a census area, please write " (CA)" after its name.</li>
+					<li>To look at the populated places for the District of Columbia, select it from the state dropdown list and type "District of Columbia" into the county textbox.</li>
+					<li>Results may take some time to load after the form is submitted. If the item typed in the county textbox is either misspelled or does not exist, nothing will be displayed below the form.</li>
+				</ul>
+			</p>
+			<!-- Form used to search for populated places within a county in a selected state -->
+			<form>
+				County: <input type="text" id="county" /><br>
+				State: 
+				<select id="state">
+					<option value="alabama">Alabama</option>
+					<option value="alaska">Alaska</option>
+					<option value="arizona">Arizona</option>
+					<option value="arkansas">Arkansas</option>
+					<option value="california">California</option>
+					<option value="colorado">Colorado</option>
+					<option value="connecticut">Connecticut</option>
+					<option value="delaware">Delaware</option>
+					<option value="district of columbia">District of Columbia</option>
+					<option value="florida">Florida</option>
+					<option value="georgia">Georgia</option>
+					<option value="hawaii">Hawaii</option>
+					<option value="idaho">Idaho</option>
+					<option value="illinois">Illinois</option>
+					<option value="indiana">Indiana</option>
+					<option value="iowa">Iowa</option>
+					<option value="kansas">Kansas</option>
+					<option value="kentucky">Kentucky</option>
+					<option value="louisiana">Louisiana</option>
+					<option value="maine">Maine</option>
+					<option value="maryland">Maryland</option>
+					<option value="massachusetts">Massachusetts</option>
+					<option value="michigan">Michigan</option>
+					<option value="minnesota">Minnesota</option>
+					<option value="mississippi">Mississippi</option>
+					<option value="missouri">Missouri</option>
+					<option value="montana">Montana</option>
+					<option value="nebraska">Nebraska</option>
+					<option value="nevada">Nevada</option>
+					<option value="new hampshire">New Hampshire</option>
+					<option value="new jersey">New Jersey</option>
+					<option value="new mexico">New Mexico</option>
+					<option value="new york">New York</option>
+					<option value="north carolina">North Carolina</option>
+					<option value="north dakota">North Dakota</option>
+					<option value="ohio">Ohio</option>
+					<option value="oklahoma">Oklahoma</option>
+					<option value="oregon">Oregon</option>
+					<option value="pennsylvania">Pennsylvania</option>
+					<option value="rhode island">Rhode Island</option>
+					<option value="south carolina">South Carolina</option>
+					<option value="south dakota">South Dakota</option>
+					<option value="tennessee">Tennessee</option>
+					<option value="texas">Texas</option>
+					<option value="utah">Utah</option>
+					<option value="vermont">Vermont</option>
+					<option value="virginia">Virginia</option>
+					<option value="washington">Washington</option>
+					<option value="west virginia">West Virginia</option>
+					<option value="wisconsin">Wisconsin</option>
+					<option value="wyoming">Wyoming</option>
+				</select>
+				<br><input type="submit" id="submit" name="submit" />
+			</form>
+		</div>
+		<!-- Where the search results will be displayed -->
+		<div><ul id="data"></ul></div>
+		<script type="text/javascript">
+			
+			$(document).ready(function() {
+				// This function will trigger whenever the form is submitted
+				getPlaces();
+			});
+			
+			function getPlaces() {
+				$("form").on("submit", function(e) { 
+					e.preventDefault();
+					
+					// The unordered list will be emptied whenever the form is submitted
+					$("#data").html("");
+					
+					// County and state names to be used in the URL to be parsed
+					var countyName = $("#county").val();
+					var countyName = countyName.toLowerCase();
+					var stateName = $("#state").val();
+					
+					/**
+						TESTS FOR THE VARIABLE VALUES OF THE COUNTY AND STATE NAMES
+							alert(countyName);
+							alert(stateName);
+					**/
+					
+					// Parses the XML data from the GNIS and creates Google Maps links
+					function parse(document) {
+						$(document).find("USGS").each(function() {
+							$("#data").append(
+								"<li>" + 
+								"<a href='http://www.google.com/maps/place/" +
+								$(this).find("FEAT_LATITUDE_NMBR").text() + "," +
+								$(this).find("FEAT_LONGITUDE_NMBR").text() + "' " +
+								"target='_blank'>" +
+								$(this).find("FEATURE_NAME").text() + "</a>" +
+								"</li>"
+							);
+						});
+					}
+					
+					// Retrieves the data from the GNIS
+					$.ajax({
+						url: "https://geonames.usgs.gov/apex/gazvector.x?fname=&state=%27" + stateName + "%27&cnty=%27" + countyName + "%27&cell=&ftype=%27ppl%27",
+						dataType: "xml",
+						success: parse,
+						error: function() {
+							alert("ERROR: Failure to retrieve data");
+						}
+					});
+										
+				});
+			}
+		</script>
+	</body>
+</html>
